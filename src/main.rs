@@ -1,29 +1,44 @@
 extern crate gio;
 extern crate gtk;
 
-mod draw;
+mod surface;
 
-use std::env;
+use std::{convert::TryInto, env};
 
 use gio::prelude::*;
 use gtk::prelude::*;
 
-use draw::draw_surface;
+use surface::{Surface, RESET_KEYCODE};
 
 fn build_ui(application: &gtk::Application) {
     let window = gtk::ApplicationWindow::new(application);
-    let drawing_area = Box::new(gtk::DrawingArea::new)();
-
-    drawing_area.connect_draw(draw_surface);
+    let surface = Surface::new();
 
     window.set_default_size(960, 360);
 
-    window.add(&drawing_area);
+    window.add(&surface.lock().unwrap().area);
 
     window.show_all();
 
-    window.connect_key_press_event(|_, event| {
-        println!("Event: {:?}", event.get_keyval().name(),);
+    window.set_position(gtk::WindowPosition::CenterAlways);
+
+    let surface1 = surface.clone();
+    window.connect_key_press_event(move |_, event| {
+        surface1
+            .lock()
+            .unwrap()
+            .set_keycode(event.get_hardware_keycode());
+
+        Inhibit(true)
+    });
+
+    let surface2 = surface.clone();
+    window.connect_key_release_event(move |_, _| {
+        surface2
+            .lock()
+            .unwrap()
+            .set_keycode(RESET_KEYCODE.try_into().unwrap());
+
         Inhibit(true)
     });
 }
