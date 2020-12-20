@@ -1,0 +1,10 @@
+[package]
+name = "ktest"
+version = "0.1.0"
+authors = ["Nil Gradisnik <nil.gradisnik@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+gtk = "0.9"
+gio = "0.9"
+cairo-rs = "0.9"
